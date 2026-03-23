@@ -38,11 +38,16 @@ class KaryMinHeap {
             }
             return root; 
         } 
+
+        long long getSiftUpCounting(){return siftUpCounter;}; 
+        long long getSiftDownCounting(){return siftDownCounter;}; 
  
 
     private:
         std::vector<Node> heap; 
         int k; 
+        long long siftUpCounter = 0; 
+        long long siftDownCounter = 0; 
 
         int getParent(int i){ return (i-1)/k;}
         int getFirstChild(int i){ return (k*i + 1);}
@@ -57,6 +62,7 @@ class KaryMinHeap {
 
                 heap[i] = heap[p];
                 i = p; 
+                siftUpCounter++; 
             }
             heap[i] = target; 
         }
@@ -89,6 +95,7 @@ class KaryMinHeap {
 
                 heap[i] = heap[smallestChildIdx];
                 i = smallestChildIdx;    
+                siftDownCounter++;
             }
             heap[i] = target; 
         }
