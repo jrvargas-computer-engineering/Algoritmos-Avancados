@@ -1,73 +1,275 @@
 \documentclass{infufrgs}
-
-% Pacotes essenciais (a maioria já é carregada automaticamente pelo infufrgs.cls)
 \usepackage[utf8]{inputenc}
 \usepackage{framed}
 \usepackage{amsmath}
-\usepackage{graphicx} % Pacote necessário para inclusão de imagens
-
+\usepackage{graphicx} 
+\usepackage{listings}
+\usepackage{fancyvrb}
 \colorlet{shadecolor}{orange!15}
 
-\title{Relatório de Implementação e Análise: Algoritmo de Dijkstra e Heap $k$-ário}
-% A classe infufrgs exige o formato \author{Sobrenome}{Nome}
-\author{ROdrigues}{Juliana} 
-
+\title{Heaps $k$-ários e Algoritmo de Dijkstra}
+\author{Rodrigues}{Juliana} 
 \begin{document}
 \maketitle
 
-\chapter{Relatório de Análise Experimental}
 
+
+\chapter{Relatório do Experimento}
+%==================================================
+% INTRODUÇÃO
+%==================================================
 \section{Introdução}
-% Breve visão geral dos objetivos do projeto (implementação de um heap k-ário e do algoritmo de Dijkstra).
-% Resumo do que o relatório irá abordar.
+Esse trabalho descreve a implementação e análise 
+de desempenho do algoritmo de Dijkstra utilizando um Heap $k$-ário. 
+O relatório apresenta uma análise de complexidades teóricas e valida o algoritmo com teste no grafo da
+ rede rodoviária dos Estados Unidos.  
 
+
+%==================================================
+% IMPLEMENTAÇÃO
+%==================================================
 \section{Detalhes de Implementação}
 
+\subsection{Heap $k$-ário}
+%
+% Busca do vertice
+%
+\subsubsection{Busca de vértice}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize]
+std::vector<HeapNode> heap_; 
+std::vector<int> pos_;       
+\end{Verbatim}
+
+\begin{itemize}
+    \item Complexidade: O array \textit{pos\_} guarda o índice de cada vértice dentro do Heap.
+     Com isso, o custo de localizar um vértice para atualização é $O(1)$.
+\end{itemize}
+
+
+%
+% sift up
+%
+\subsubsection{sift\textsubscript{up}}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize]
+    void sift\textsubscript{up}(int i) {
+    while (i > 0 && heap_[parent(i)].distance > heap_[i].distance) {
+        int p = parent(i);
+        std::swap(heap_[i], heap_[p]);
+        pos_[heap_[i].vertex] = i; // Atualiza o mapeamento O(1)
+        pos_[heap_[p].vertex] = p;
+        i = p;
+    }
+}
+\end{Verbatim}
+
+\begin{itemize}
+    \item Complexidade: A operação sobre na árvore comparando o nó
+    com seu pai direto.  Percorrer a árvora $k$-ária no pior caso (da folha à raiz)
+     custa $O(log_{k} n)$.
+\end{itemize}
+
+
+
+%
+% sift down
+%
+\subsubsection{sift\textsubscript{down}}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize]
+    void sift_down(int i) {
+        while (true) {
+            int min_child = -1;
+            // Inspeciona até k filhos para encontrar o menor
+            for (int j = 1; j <= k_; ++j) {
+                int child_pos = kth_child(i, j);
+                if (child_pos < heap_.size()) {
+                    if (min_child == -1 || 
+                    heap_[child_pos].distance < heap_[min_child].distance) {
+                        min_child = child_pos;
+                    }
+                }
+            }
+        }
+    }
+\end{Verbatim}
+
+\begin{itemize}
+    \item Complexidade: A operação de descida na árvore, no pior caso,
+     exige em cada nível a comparação com os $k-1$ filhos para determinar 
+     o menor caminho. Assim, o custo é $O(k log_{k} n)$
+\end{itemize}
+
+
+
+\subsubsection{Outras operações}
+As seguintes usam as de complexidade já definidas acima.
+\begin{itemize}
+    \item Insert: 
+    Insere no final do array e chama \textit{sift\textsubscript{up}}. Complexidade: $O(log_{k}n)$
+    \item Decrease\textsubscript{key} (Update):
+    Acessa a posição via \textit{pos\_} e chama \textit{sift\textsubscript{up}}. Complexidade: $O(log_{k}n)$
+    \item Extract\textsubscript{min} (Delete\_min):
+    Remove a raiz (trocando com o último elemento) e chama \textit{sift\textsubscript{down}}.
+    Complexidade: $O(k log_{k}n)$
+\end{itemize}
+
+
+
+%
+% Dijsktra
+%
+\subsubsection{Dijkstra}
+\begin{Verbatim}[frame=single, fontsize=\footnotesize]
+while (!pq.is_empty()) {
+    int u = pq.extract_min();   
+    for (const auto& edge : graph_.get_neighbors(u)) {
+        int v = edge.to;
+        double weight = edge.weight;
+
+        if (distances_[u] + weight < distances_[v]) {
+            distances_[v] = distances_[u] + weight;
+            
+            if (!pq.contains(v)) {
+                pq.insert(v, distances_[v]); 
+            } else {
+                pq.decrease_key(v, distances_[v]); 
+            }
+        }
+    }
+}
+\end{Verbatim}
+\begin{itemize}
+    \item Complexidade Total: Somando os custos já definidos, a complexidade
+     do algoritmo é $n * k log_{k}n + m * log_{k}n$
+\end{itemize}
+
+
+
+
+
+%heap, dijkstra, convencoes ES
 \subsection{Representação do Grafo}
-% Explicação da estrutura de lista de adjacências utilizada para suportar grafos esparsos com até ~24 milhões de vértices.
+O grafo foi representado como uma lista de adjacência, que é mais eficiente que uma matriz de adjacência
+para grafos esparsos. 
 
-\subsection{Design do Heap $k$-ário}
-% Detalhes sobre como o array do heap é gerenciado, como filhos/pais são calculados com base em k, e o array de mapeamento usado para buscas de vértices em O(1) durante a operação de update.
 
-\subsection{Algoritmo de Dijkstra}
-% Breve visão geral da integração do algoritmo com o heap.
+\begin{Verbatim}[frame=single, fontsize=\footnotesize]
+\struct Edge {
+    int to;
+    double weight;
+};
+class SparseGraph {
+private:
+    int num_vertices_;
+    std::vector<std::vector<Edge>> adj_;
+    // ...
+public:
+    void add_edge(int u, int v, double weight) {
+        adj_[u].push_back({v, weight});
+    }
+};
+\end{Verbatim}
 
-\subsection{E/S e Convenções}
-% Confirmação de que o programa aceita o formato DIMACS via stdin, lê source/dest através de argv, e lida corretamente com o caso limite "inf".
+ \begin{itemize}
+    \item Complexidade de espaço: $O(n+m)$. A lista armazena $n$ nodos + $m$ arestas. 
+    \item Inserção de aresta: $O(1)$, devido ao uso da função \textit{push\textsubscript{back}} da 
+    biblioteca \textit{std::vector}. 
+ \end{itemize}
 
+
+
+
+%==================================================
+% AMBIENTE TESTE
+%==================================================
 \section{Ambiente de Teste}
+Notebook Dell Pro 14 Plus, equipado com processador Intel Ultra 5 e 16 GB de memória RAM.
 
-\subsection{Especificações de Hardware}
-% CPU, RAM total e tipo de armazenamento (HDD/SSD, relevante para a E/S da Suite D).
 
-\subsection{Stack de Software}
-% Versão do SO, versão do compilador C++ (ex: GCC/Clang), e flags de otimização utilizadas (ex: -O3).
 
-\subsection{Ferramentas de Benchmarking}
-% Ambiente Python, métodos de medição de execução e scripts de geração de grafos.
-
+%==================================================
+% RESULTADOS
+%==================================================
 \section{Resultados Experimentais e Análise}
 
-\subsection{Ajuste de Parâmetros: Encontrando o Grau Ideal do Heap ($k$)}
+Para os gráficos com \textit{box plots} e faixas de variância contínua, 
+é importante considerar que eventuais variâncias muito elevadas podem 
+ser resultado de ruídos de 
+concorrência com o sistema operacional no momento dos testes.
+
+
+%==================================================
+% SUITE A 
+%==================================================
+\subsection{Ajuste do Grau Ideal para o Heap $k$-ário}
 % Objetivo: Determinar o valor de k que produz o melhor desempenho.
 
-\begin{figure}[hbt!]
-    \centering
-    \includegraphics[width=0.8\textwidth]{Images/suiteA_graph1_performance_n100000.png}
-    \caption{Tempo de execução em relação ao grau do heap $k$ para $n=100.000$.}
-    \label{fig:perf_100k}
-\end{figure}
+A aplicação do algoritmo de Dijkstra exige três elementos fundamentais:
 
-\begin{figure}[hbt!]
-    \centering
-    \includegraphics[width=0.8\textwidth]{Images/suiteA_graph1_performance_n250000.png}
-    \caption{Tempo de execução em relação ao grau do heap $k$ para $n=250.000$.}
-    \label{fig:perf_250k}
-\end{figure}
-% Descrição dos gráficos: Estes subgráficos facetados exibem o tempo de execução (eixo Y) em relação ao grau do heap k (eixo X) para várias densidades de grafos (m). Eles visualizam o trade-off em "curva U": valores pequenos de k sofrem com árvores profundas (update lento), enquanto valores grandes de k sofrem com nós largos (deletemin lento). O ponto mais baixo na linha de tendência da mediana vermelha comprova o k ótimo para a implementação.
+\begin{itemize}
+    \item A implementação do algoritmo. 
+    \item Um heap k-ário que armazena as distâncias.
+    \item Uma fila de prioridade, que indica qual será o próximo nodo explorado
+\end{itemize}
 
+A complexidade teórica do algortimo de Dijkstra é $ 0(n) + n * deletemin + n * insert + m * update$. A complexidade 
+concreta depende de como as operações são implementadas. O grau k do Heap afeta o tempo de execução das operações de
+ \textit{deletemin}, \textit{insert} e \textit{update}.
+
+ O primeiro teste busca definiu o grau ideal k do heap experimentalmente. Para isso, 
+foram exploradas as combinações com os graus $k$ = 2,3,4,5,8 e 16: 
+
+\begin{enumerate}
+    \item Número de nodos(n) fixado em 100000, número de arestas: m = 2n, m = 10n, m = 30n. 
+    \item Número de nodos(n) fixado em 250000, número de arestas: m = 2n, m = 10n, m = 30n. 
+\end{enumerate}
+
+A variação do número de arestas é feita para variar a densidade dos grafos em: esparsos (n * 2), médios (n * 10)
+ e densos (n * 30). Cada experimento foi replicado 10 vezes. 
+
+ \begin{figure}[hbt!]
+     \centering
+     \includegraphics[width=1.0\textwidth]{Images/suiteA_graph1_performance_n100000.png}
+     \caption{Tempo de execução em relação ao grau do heap $k$ para $n=100.000$.}
+     \label{fig:perf_100k}
+ \end{figure}
+ 
+ \begin{figure}[hbt!]
+     \centering
+     \includegraphics[width=1.0\textwidth]{Images/suiteA_graph1_performance_n250000.png}
+     \caption{Tempo de execução em relação ao grau do heap $k$ para $n=250.000$.}
+     \label{fig:perf_250k}
+ \end{figure}
+
+O resultado dos experimentos 1. e 2. está nos gráficos das Figuras \ref{fig:perf_100k} e 
+\ref{fig:perf_250k}. Pode-se observar:
+
+\begin{itemize}
+    \item Heaps com menor k resultam em árvores profundos. Nessas topologias, as operações de subida na árvore (Update/sift\textsubscript{up})
+    são mais lentas, e as operações de descida (Insert/sift\textsubscript{down}) são mais rápidas. Heaps com maior k são mais largos, e para eles vale
+    contrário. \\
+    Heaps com maior número m de arestas, para o mesmo número de nodos são mais densos e precisam de mais operação de Update. Isso faz
+     com que eles se beneficiem de um maior k. É possível ver no gráfico que na maioria das curvas os pontos 
+     tem menor valor no eixo de tempo indo para direita. O comportamento começa a inverter com k=16, em que 
+     número aumentado de tempo para operaçãos de Inserts/sift\textsubscript{down} supera a economia de tempo nas operações de Updates/sift\textsubscript{up}. 
+    \item Alguns pontos fogem da tendência citada acima. Nesses pontos, como k = 4 e k = 5 no gráfico da figura \ref{fig:perf_100k}
+    o tamanho da caixa de variância é maior. Nesse caso, a diferença entre os resultados de cada replicação foi grande, 
+    e condições externas ao algoritmo, como outros processos rodando na máquina, podem ter prejudicado o teste.  
+\end{itemize}
+
+Assim, foi obtido das simulações o grau ideal para o Heap = 8, especialmente em grafos densos. 
+
+
+
+
+%==================================================
+% SUITE B
+%==================================================
 \subsection{Validação da Complexidade do Heap}
 % Objetivo: Verificar se o número de operações de sift respeita os limites teóricos (\le \log_k n').
+No Heap $k$-ário o número de sifts é limitado matematicamente pela altura da árvore ($log_{k}n$). A 
+fração de \textit{sifts} realizada pelo código não ultrapassa o limite teórico (1.0), 
+como visto na Fig. \ref{fig:heap_comp_combined}. Grafos mais densos demandam mais 
+operações de sift\textsubscript{up} e sift\textsubscript{down}. 
 
 \begin{figure}[hbt!]
     \centering
@@ -75,21 +277,29 @@
     \caption{Fração das operações de sift em função da densidade do grafo para diferentes graus do heap ($k$).}
     \label{fig:heap_comp_combined}
 \end{figure}
-% Descrição dos gráficos: Esta grade de subgráficos mostra a fração das operações máximas possíveis de sift (r_up e r_down) no eixo Y contra a densidade do grafo (\alpha = \log_n m) no eixo X, organizados lado a lado para diferentes valores de k. A linha tracejada preta sólida em 1.0 representa o limite pessimista teórico. Os dados provam de forma consistente que as operações reais nunca ultrapassam este teto matemático e ilustram como a dinâmica interna das operações no heap se altera conforme a árvore se torna mais larga e rasa.
+
+
+
 
 \subsection{Validação da Complexidade do Algoritmo: Operações de Atualização}
-% Objetivo: Analisar a fração das operações de atualização como função de n e \alpha.
-
+Na Fig. \ref{fig:update_comp} é possível perceber que depois de um ponto de máxima, 
+a fração empírica de atualizações diminui com a densidade do grafo. 
 \begin{figure}[hbt!]
     \centering
     \includegraphics[width=0.8\textwidth]{Images/suiteA_graph3_update_complexity.png}
     \caption{Fração de atualizações $u$ em relação à densidade do grafo $\alpha$.}
     \label{fig:update_comp}
 \end{figure}
-% Descrição dos gráficos: Um gráfico de linha mostrando a fração de atualizações u = atualizações / m em diferentes densidades de grafos. Ele ilustra a frequência com que um caminho descoberto é de fato mais curto que um caminho conhecido anteriormente, demonstrando que, à medida que a densidade aumenta, a proporção de arestas que desencadeiam uma atualização estabiliza ou diminui.
 
+
+
+%==================================================
+% SUITE C
+%==================================================
 \subsection{Análise do Caso Médio: Valor Esperado de Noshita}
-% Objetivo: Comparar as contagens empíricas de atualização com a fórmula teórica de caso médio de Noshita.
+A proposição de Noshita diz que o número de update gira em torno de $n \ln(m/n)$ incidências, 
+para arestas com valores aleatórios. 
+
 
 \begin{figure}[hbt!]
     \centering
@@ -98,23 +308,24 @@
     \label{fig:noshita}
 \end{figure}
 
-% Tabela com dados exportados do CSV demonstrando a variância microscópica.
-\begin{table}[hbt!]
-    \centering
-    \begin{tabular}{|c|c|c|c|}
-        \hline
-        \textbf{m (Arestas)} & \textbf{Média Empírica (Updates)} & \textbf{Desvio Padrão} & \textbf{Noshita (Esperado)} \\ \hline
-        % PREENCHER COM OS DADOS GERADOS PELO SCRIPT
-        & & & \\ \hline
-        & & & \\ \hline
-    \end{tabular}
-    \caption{Variância microscópica observada contra as previsões teóricas.}
-    \label{tab:variance}
-\end{table}
-% Descrição dos gráficos: Um gráfico de linha comparando diretamente o número empírico de atualizações contra o valor esperado de Noshita à medida que o número de arestas (m) cresce. Valida visualmente que o comportamento do algoritmo no mundo real se alinha com a teoria matemática de caso médio.
+A curva empírica da Fig. \ref{fig:noshita} mostra a associação do valor resultado dos testes com 
+o limite modelado. O número de \textit{Updates} cresce com o grau $k$ do Heap, que resulta em árvores mais largas. 
 
+
+
+
+%==================================================
+% SUITE D
+%==================================================
 \subsection{Avaliação do Escalonamento Assintótico}
-% Objetivo: Avaliar o escalonamento do algoritmo de Dijkstra frente ao limite teórico O(m \log_k n + n \cdot k \log_k n).
+
+Análise com o objetivo de verificar o escalonamento da complexidade 
+temporal teórica $\mathcal{O}(m \log_k n + n \cdot k \log_k n)$. 
+Para isso o tempo de execução medido pela fórmula teórica $T / ((n+m)\log n)$ foi normalizado. 
+Nas Figuras \ref{fig:norm_m} e \ref{fig:norm_n}, 
+as linhas plotadas são praticamente horizontais, 
+mesmo com o crescimento exponencial do tamanho do grafo. 
+A implementação escala de acordo com a complexidade teórica. 
 
 \begin{figure}[hbt!]
     \centering
@@ -129,10 +340,12 @@
     \caption{Complexidade de tempo normalizada variando o número de vértices ($n$).}
     \label{fig:norm_n}
 \end{figure}
-% Descrição dos gráficos: Estes gráficos mostram o tempo de execução normalizado contra a fórmula de complexidade teórica T / ((n+m)\log n). O fato de a linha plotada permanecer amplamente horizontal/plana à medida que n e m crescem exponencialmente prova que o algoritmo escala perfeitamente em conjunto com os limites teóricos.
+
+
 
 \subsection{Análise de Regressão Linear Múltipla}
-% Objetivo: Aplicar uma regressão linear T(n,m) \approx a \cdot n^b \cdot m^c ao conjunto de dados.
+Aplicando regressão linear com a equação  $T(n,m) \approx a \cdot n^b \cdot m^c$,
+compara-se o tempo real de execução com o tempo previsto pelo modelo da Fig. \ref{fig:reg_scatter}. 
 
 \begin{figure}[hbt!]
     \centering
@@ -141,16 +354,17 @@
     \label{fig:reg_scatter}
 \end{figure}
 
-\begin{figure}[hbt!]
-    \centering
-    \includegraphics[width=0.8\textwidth]{Images/suiteR_residuals_error.png}
-    \caption{Distribuição da porcentagem de erro relativo do modelo.}
-    \label{fig:reg_error}
-\end{figure}
-% Descrição dos gráficos: O primeiro é um gráfico de dispersão log-log mapeando os tempos reais do algoritmo contra os tempos previstos pelo modelo de regressão, com uma linha vermelha representando um ajuste perfeito. O segundo é um histograma da porcentagem de erro relativo, demonstrando se a fórmula derivada tende a superestimar ou subestimar os tempos de execução.
 
+
+
+%==================================================
+% GRAFO EUA
+%==================================================
 \subsection{Desempenho no Mundo Real (Desafio DIMACS)}
-% Objetivo: Analisar agendamento, tempo e consumo de memória em instâncias massivas do mundo real.
+A etapa final utilizou o grafo de estradas USA.gr, que tem quase 24 milhões 
+de vértices. Com a análise de tempo (Figura \ref{fig:dimacs_time}) 
+é possível perceber que o gargalo de desempenho está na operação de E/S 
+(leitura do arquivo do disco para a memória).
 
 \begin{figure}[hbt!]
     \centering
@@ -172,14 +386,14 @@
     \caption{Detalhamento de operações executadas em rede rodoviária real.}
     \label{fig:dimacs_ops}
 \end{figure}
-% Descrição dos gráficos: 
-% * Perfil de Tempo: Gráfico de barras revelando o enorme gargalo de E/S de Disco (leitura do arquivo de 24M de vértices) comparado ao tempo de execução altamente otimizado do algoritmo em si.
-% * Memória: Gráfico de linha rastreando o uso de RAM ao longo de 30 execuções consecutivas, provando a complexidade espacial O(V+E) e confirmando visualmente a ausência de vazamentos de memória (memory leaks).
-% * Operações: Gráfico de barras horizontais logarítmicas detalhando as contagens brutas das operações de Insert, Deletemin, Update, Sift_Up e Sift_Down desencadeadas ao atravessar toda a rede rodoviária dos Estados Unidos.
 
+
+
+%==================================================
+% CONLUSÃO
+%==================================================
 \section{Conclusão}
-% Declaração final identificando o valor absoluto de k ideal descoberto.
-% Confirmação de que a implementação respeitou com sucesso todos os limites teóricos pessimistas.
-% Reflexões finais sobre a escalabilidade do algoritmo desde pequenos grafos sintéticos até redes rodoviárias de dimensão continental.
-
+A implementação respeitou os limites téoricos de complexidade e 
+o modelo de caso médio. O algoritmo escalou corretamente para processar o grafo
+USA.gr. 
 \end{document}
