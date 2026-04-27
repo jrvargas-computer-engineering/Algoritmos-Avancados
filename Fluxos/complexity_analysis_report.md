@@ -1,5 +1,223 @@
-# Maximum Flow Algorithms: Complexity Analysis Report
+# Introduction and Theoretical Foundations
+Before analyzing the empirical complexity of the implemented algorithms, it is necessary to define the foundational concepts of maximum flow networks and the theoretical metrics used to evaluate them.
 
+A flow network is modeled as a directed and capacitated graph $G=(V,A,c)$, where each arc $a \in A$ has a maximum capacity $c_a$. The goal of a maximum $s-t$ flow algorithm is to find a flow assignment $f$ that maximizes the total flow transported from a specific starting vertex to a specific ending vertex.
+* **Source ($s$):** The origin vertex ("fonte") that generates the flow.
+* **Sink ($t$):** The destination vertex ("sorvedouro" or "destino") that absorbs the flow.
+* **Flow Conservation:** For every other vertex in the network $v \in V \setminus \{s,t\}$, the total flow entering the vertex must exactly equal the total flow leaving it ($f(v) = 0$).
+
+Algorithms in the Ford-Fulkerson family operate by repeatedly finding "augmenting paths" from the source to the sink within a residual graph $G_f$, increasing the flow until no such paths remain. 
+
+**Understanding "Inadequacy" and "Defects"**
+A core objective of this report is to analyze the "defect" or "inadequacy" of pessimistic theoretical bounds. 
+Theoretical complexity bounds assume the absolute worst-case scenarios—for example, the basic Ford-Fulkerson algorithm has a pessimistic upper limit of $C$ iterations (where $C$ is the maximum flow), meaning it could theoretically require a new phase for every single unit of flow. Edmonds-Karp bounds this to $O(nm)$ iterations. 
+
+In this report, the **Defect (or Inadequacy)** refers to the mathematical gap between these pessimistic theoretical limits and the algorithm's actual performance. We quantify this using three metrics:
+1. **Phase Ratio ($r$):** The fraction of the theoretical maximum phases actually executed. 
+2. **Vertex Defect ($\bar{s}$):** The average fraction of total vertices explored per phase.
+3. **Edge Defect ($\bar{t}$):** The average fraction of total edges evaluated per phase.
+
+
+
+# Algorithmic Complexity and Code Analysis
+
+This document outlines the theoretical time complexities of the six Maximum Flow algorithms implemented in this project. By examining the source code, we can identify the specific loops, data structures, and conditional logic that dictate the worst-case performance bounds.
+
+Let $n = |V|$ (number of vertices), $m = |E|$ (number of edges), and $C$ be the maximum flow value.
+
+---
+
+## 1. Ford-Fulkerson (DFS)
+**Theoretical Worst-Case Complexity:** $O(m \cdot C)$
+
+The Ford-Fulkerson algorithm using Depth-First Search (DFS) is a pseudo-polynomial algorithm. In the worst case, every phase finds an augmenting path that only pushes $1$ unit of flow. Therefore, it might take exactly $C$ phases. Finding a path using DFS takes $O(m)$ time, as it explores edges until it hits the sink.
+
+**Where it lives in the code (`FordFulkersonDFS.cpp`):**
+The $O(m)$ pathfinding happens in this recursive loop, which visits each edge at most once per phase:
+```cpp
+    for (size_t i = 0; i < network.adj_list[u].size(); ++i) {
+        e_touched++; // Track every edge evaluated
+        Edge& edge = network.adj_list[u][i];
+        long long residual = network.get_residual_capacity(edge);
+        
+        if (!visited[edge.to] && residual > 0) {
+            // Recurse deeper, carrying the bottleneck flow downwards
+            long long bottleneck = dfs(network, edge.to, t, std::min(current_flow, residual), 
+                                       visited, v_touched, e_touched);
+            // ...
+```
+
+## 2. Randomized Ford-Fulkerson(RDFS)
+**Theoretical Worst-Case Complexity:** $O(m \cdot C)$
+
+The Randomized DFS has the exact same theoretical worst-case bound as standard FF. However, its average-case performance is drastically improved on pathological graphs because it breaks deterministic worst-case edge selection by shuffling the adjacency evaluation order.
+
+**Where it lives in the code (`FordFulkersonRandDFS.cpp`):**
+The complexity remains $O(m)$ per phase, but the edge indices are shuffled in $O(m)$ time before the loop begins:
+
+```cpp
+std::vector<size_t> indices(network.adj_list[u].size());
+    std::iota(indices.begin(), indices.end(), 0);
+
+    static std::random_device rd; 
+    static std::mt19937 g(rd());
+
+    // Shuffling breaks the deterministic worst-case path selection
+    std::shuffle(indices.begin(), indices.end(), g); 
+
+    for (size_t idx = 0; idx < network.adj_list[u].size(); ++idx) {
+        size_t i = indices[idx]; // Access edges randomly
+        // ...
+```
+
+## 3. Edmonds-Karp (BFS)
+**Theoretical Worst-Case Complexity:**  $O(n m^2)$
+Edmonds-Karp guarantees strongly polynomial time by always selecting the shortest augmenting path (in terms of the number of edges). It is mathematically proven that an edge can become critical at most $n/2$ times. Because there are $m$ edges, there are at most $O(n m)$ phases. Each phase performs a Breadth-First Search (BFS) taking $O(m)$ time.
+
+**Where it lives in the code (`EdmondsKarp.cpp`):**
+The BFS queue ensures we search level by level, stopping the moment the sink $t$ is reached.
+
+```cpp
+// BFS traversal
+        while (!q.empty() && !reached_sink) {
+            int u = q.front();
+            q.pop();
+
+            for (size_t i = 0; i < network.adj_list[u].size(); ++i) {
+                const Edge& edge = network.adj_list[u][i];
+                
+                // Only traverse unvisited nodes with residual capacity
+                if (parent_node[edge.to] == -1 && network.get_residual_capacity(edge) > 0) {
+                    parent_node[edge.to] = u;
+                    // ... q.push(edge.to)
+```
+
+## 4. Dinitz's Algorithm 
+**Theoretical Worst-Case Complexity:** $O(n^2 m)$
+Dinitz's algorithm achieves a superior polynomial bound by splitting the work. It builds a "Level Graph" using BFS in $O(m)$ time, and then finds a "Blocking Flow" using multiple DFS passes. Because the level graph strictly restricts backward or lateral movement, the length of the paths is bounded by $n$. A single phase finds multiple paths in $O(nm)$ time, and there can be at most $n$ phases.
+
+**Where it lives in the code (`Dinitz.cpp`):**
+The secret to Dinitz's $O(nm)$ DFS efficiency is the ptr array (dead-end pruning). Notice the int& cid = ptr[u] reference. It remembers where the loop left off in the previous DFS iteration during the same phase, preventing the algorithm from re-evaluating dead ends!
+
+```cpp
+long long dfs(int u, long long pushed, int& vertices_touched) {
+        // ...
+        // ptr[u] prevents revisiting dead-ends in the level graph
+        for (int& cid = ptr[u]; cid < network.adj_list[u].size(); ++cid) {
+            Edge& edge = network.adj_list[u][cid];
+            long long res = network.get_residual_capacity(edge);
+
+            // Only traverse edges progressing strictly to the next level
+            if (level[u] + 1 != level[edge.to] || res == 0) continue;
+            // ...
+```
+
+## 5. Capacity Scaling
+**Theoretical Worst-Case Complexity:** $O(m^2 \log C)$
+Capacity Scaling guarantees polynomial time without complex data structures. It bounds the number of phases by introducing a threshold delta. The algorithm only considers edges with capacity $\ge \Delta$. $\Delta$ starts at the maximum edge capacity and halves until it reaches 1. There are $O(\log C)$ scaling phases, and within each phase, it acts like Edmonds-Karp, finding augmenting paths in $O(m^2)$ time.
+
+**Where it lives in the code (`CapacityScaling.cpp`):**
+```cpp
+// 2. Scaling Loop (Executes log(C) times)
+    while (delta >= 1) {
+        bool path_found = true;
+        
+        // Find augmenting paths using only edges with capacity >= delta
+        while (path_found) {
+             // ... BFS setup ...
+             // The core Scaling restriction:
+             if (parent_node[edge.to] == -1 && network.get_residual_capacity(edge) >= delta) {
+                 // ... push to queue
+             }
+        }
+        // Reduce delta for the next scaling phase
+        delta /= 2; 
+    }
+```
+
+## 6. Fattest Path (Modified Dijkstra)
+**Theoretical Worst-Case Complexity:** $O(m \log n \cdot m \log C)$
+The Fattest Path algorithm always augments along the path with the maximum possible bottleneck capacity. Theoretically, this guarantees finding the maximum flow in at most $O(m \log C)$ phases. However, finding the "fattest" path requires a modified Dijkstra's algorithm. Using a binary heap (Priority Queue), updating and extracting nodes takes $O(m \log n)$ time per phase.
+
+**Where it lives in the code (`FattestPath.cpp` & `IndexedMaxHeap.hpp`):**
+The complexity is driven by the IndexedMaxHeap. Every time an edge is evaluated and provides a wider bottleneck, the Priority Queue must sift up/down to maintain the maximum bottleneck at the top.
+
+```cpp
+// Extract the node with the current largest known path capacity in O(log n)
+        while (!pq.is_empty()) {
+            int u = pq.extract_max();
+            
+            // ... Loop through adjacent edges ...
+                    
+                    // Relaxation: Maximize the bottleneck
+                    if (bottleneck > max_cap[edge.to]) {
+                        max_cap[edge.to] = bottleneck;
+                        // ...
+                        if (pq.contains(edge.to)) {
+                            pq.update_key(edge.to, bottleneck); // O(log n) operation
+                        } else {
+                            pq.insert(edge.to, bottleneck);     // O(log n) operation
+                        }
+                    }
+```
+
+# Experimental Methodology and Pipeline Configuration
+This document details the automated experimental pipeline used to evaluate the complexity of the Maximum Flow algorithms. The experiments were orchestrated using a custom Perl script (`run_experiments.pl`) that dynamically generated graphs and fed them to the C++ solver.
+
+## 1. The Execution Pipeline
+* **Graph Generator:** The pipeline utilizes the provided `./washington` generator to create test instances on-the-fly.
+* **Input Format:** All graphs are generated strictly in standard **DIMACS format** and saved to a temporary file (`temp_graph.max`).
+* **Data Feeding:** The generated DIMACS file is piped directly into the standard input (`stdin`) of the C++ program using the command: `./FlowExperiment --benchmark < temp_graph.max`.
+* **Graph Families:** Every experiment is executed against two distinct topological graph families:
+    * **Type 6 (`BasicLine`):** A standard line mesh topology.
+    * **Type 8 (`DoubleExpLine`):** A topological trap designed to create worst-case execution scenarios.
+
+---
+
+## 2. Experiment Stage A: Density Impact
+This stage tests how the algorithms handle an increasingly dense web of edges while the number of vertices remains constant. 
+
+* **Fixed Parameter (Vertices):** The dimensions were fixed at `dim1 = 2` and `dim2 = 2500`, resulting in a constant vertex count of exactly **$n = 5,002$**.
+* **Scaling Parameter (Density):** The `deg` (degree) variable was gradually scaled through the values: **$2, 5, 10, 20,$ and $40$**.
+* **Resulting Edge Counts ($m$):** As the degree increased, the number of edges scaled from roughly **$10,000$ up to $200,000$** edges on the same 5,002-node graph.
+
+---
+
+## 3. Experiment Stage B: Size Scaling Impact
+This stage tests the asymptotic complexity of the algorithms by simulating pure growth in size while maintaining the exact same edge density ratio.
+
+* **Fixed Parameter (Density):** The degree was held constant at **$deg = 10$**.
+* **Scaling Parameter (Vertices):** The `dim2` variable was scaled through the values: **$500, 1000, 2500, 5000,$ and $10000$**.
+* **Resulting Node and Edge Counts:**
+    * $n \approx 1,000 \rightarrow m \approx 10,000$
+    * $n \approx 2,000 \rightarrow m \approx 20,000$
+    * $n \approx 5,000 \rightarrow m \approx 50,000$
+    * $n \approx 10,000 \rightarrow m \approx 100,000$
+    * $n \approx 20,000 \rightarrow m \approx 200,000$
+
+---
+
+## 4. Generated Data (The CSV Output)
+During both Stage A and Stage B, the C++ solver executes all six algorithm implementations (Edmonds-Karp, Ford-Fulkerson, Randomized DFS, Fattest Path, Capacity Scaling, and Dinitz). 
+
+The raw data is output to `stdout`, intercepted by the script, appended with tracking metadata, and saved to a uniquely timestamped CSV file (e.g., `final_complexity_report_20260427_143000.csv`). 
+
+For every single graph generated, **six rows** of data are produced containing the following 12 columns:
+
+1. **Family:** The graph topology (`BasicLine` or `DoubleExpLine`).
+2. **ExpType:** The stage of the experiment (`Density` or `Scaling`).
+3. **Algorithm:** The pathfinding strategy used (`EK`, `FF`, `RDFS`, `FP`, `EC`, `Di`).
+4. **n:** The exact number of vertices in the graph.
+5. **m:** The exact number of edges in the graph.
+6. **Max_Flow:** The final integer value of the maximum flow found.
+7. **F:** The actual number of augmenting phases the algorithm took.
+8. **F_bar:** The theoretical maximum (pessimistic) bound for phases (e.g., $nm/2$ for EK).
+9. **r:** The Phase Ratio ($F / \bar{F}$).
+10. **s_bar:** The Vertex Defect (Average fraction of total vertices touched per phase).
+11. **t_bar:** The Edge Defect (Average fraction of total edges evaluated per phase).
+12. **Time_ms:** The physical execution time measured in milliseconds.
+
+# Maximum Flow Algorithms: Complexity Analysis Report
 ## 1. Inadequacy of Phases ($r$)
 This table shows the average phase ratio $r = F / \bar{F}$. A value much smaller than 1.0 indicates that the theoretical pessimistic bound is vastly overstated in practice.
 
