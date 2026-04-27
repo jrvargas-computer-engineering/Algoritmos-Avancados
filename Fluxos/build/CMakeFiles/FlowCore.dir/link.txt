@@ -1,0 +1,2 @@
+/usr/bin/ar qc libFlowCore.a CMakeFiles/FlowCore.dir/src/FlowNetwork.cpp.o CMakeFiles/FlowCore.dir/src/EdmondsKarp.cpp.o CMakeFiles/FlowCore.dir/src/FordFulkersonDFS.cpp.o CMakeFiles/FlowCore.dir/src/FordFulkersonRandDFS.cpp.o CMakeFiles/FlowCore.dir/src/FattestPath.cpp.o CMakeFiles/FlowCore.dir/src/CapacityScaling.cpp.o CMakeFiles/FlowCore.dir/src/Dinitz.cpp.o CMakeFiles/FlowCore.dir/src/DimacsParser.cpp.o
+/usr/bin/ranlib libFlowCore.a

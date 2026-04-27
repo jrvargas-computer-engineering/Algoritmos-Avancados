@@ -1,0 +1,71 @@
+Start testing: Apr 26 22:19 -03
+----------------------------------------------------------
+1/1 Testing: FlowTestSuite
+1/1 Test: FlowTestSuite
+Command: "/home/juliana/GitHub/Algoritmos-Avancados/Fluxos/build/FlowTests"
+Directory: /home/juliana/GitHub/Algoritmos-Avancados/Fluxos/build
+"FlowTestSuite" start time: Apr 26 22:19 -03
+Output:
+----------------------------------------------------------
+Running main() from /home/juliana/GitHub/Algoritmos-Avancados/Fluxos/build/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 16 tests from 5 test suites.
+[----------] Global test environment set-up.
+[----------] 4 tests from FlowNetworkTest
+[ RUN      ] FlowNetworkTest.Initialization
+[       OK ] FlowNetworkTest.Initialization (0 ms)
+[ RUN      ] FlowNetworkTest.AddEdge
+[       OK ] FlowNetworkTest.AddEdge (0 ms)
+[ RUN      ] FlowNetworkTest.AugmentFlow
+[       OK ] FlowNetworkTest.AugmentFlow (0 ms)
+[ RUN      ] FlowNetworkTest.ResetFlow
+[       OK ] FlowNetworkTest.ResetFlow (0 ms)
+[----------] 4 tests from FlowNetworkTest (0 ms total)
+
+[----------] 3 tests from MetricsReportTest
+[ RUN      ] MetricsReportTest.CalculateSBar_NormalUse
+[       OK ] MetricsReportTest.CalculateSBar_NormalUse (0 ms)
+[ RUN      ] MetricsReportTest.CalculateTBar_NormalUse
+[       OK ] MetricsReportTest.CalculateTBar_NormalUse (0 ms)
+[ RUN      ] MetricsReportTest.HandlesZeroDivisorAndTotals
+[       OK ] MetricsReportTest.HandlesZeroDivisorAndTotals (0 ms)
+[----------] 3 tests from MetricsReportTest (0 ms total)
+
+[----------] 3 tests from MaxFlowSolversTest
+[ RUN      ] MaxFlowSolversTest.SimplePath
+[       OK ] MaxFlowSolversTest.SimplePath (0 ms)
+[ RUN      ] MaxFlowSolversTest.DiamondGraph
+[       OK ] MaxFlowSolversTest.DiamondGraph (0 ms)
+[ RUN      ] MaxFlowSolversTest.DisconnectedGraph
+[       OK ] MaxFlowSolversTest.DisconnectedGraph (0 ms)
+[----------] 3 tests from MaxFlowSolversTest (0 ms total)
+
+[----------] 3 tests from DimacsParserTest
+[ RUN      ] DimacsParserTest.ParseValidDimacsFormat
+[       OK ] DimacsParserTest.ParseValidDimacsFormat (0 ms)
+[ RUN      ] DimacsParserTest.ThrowsOnMissingSourceOrSink
+[       OK ] DimacsParserTest.ThrowsOnMissingSourceOrSink (0 ms)
+[ RUN      ] DimacsParserTest.ThrowsOnMissingPLine
+[       OK ] DimacsParserTest.ThrowsOnMissingPLine (0 ms)
+[----------] 3 tests from DimacsParserTest (0 ms total)
+
+[----------] 3 tests from IndexedMaxHeapTest
+[ RUN      ] IndexedMaxHeapTest.InsertAndExtractMax
+[       OK ] IndexedMaxHeapTest.InsertAndExtractMax (0 ms)
+[ RUN      ] IndexedMaxHeapTest.UpdateKeyIncreasesPriority
+[       OK ] IndexedMaxHeapTest.UpdateKeyIncreasesPriority (0 ms)
+[ RUN      ] IndexedMaxHeapTest.ContainsAndExceptionHandling
+[       OK ] IndexedMaxHeapTest.ContainsAndExceptionHandling (0 ms)
+[----------] 3 tests from IndexedMaxHeapTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 16 tests from 5 test suites ran. (1 ms total)
+[  PASSED  ] 16 tests.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"FlowTestSuite" end time: Apr 26 22:19 -03
+"FlowTestSuite" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Apr 26 22:19 -03

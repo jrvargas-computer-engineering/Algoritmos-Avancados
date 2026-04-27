@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/washington.dir/experiments/new_washington.c.o -o washington 
