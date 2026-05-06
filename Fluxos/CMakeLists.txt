@@ -84,3 +84,10 @@ add_custom_target(experiments
         
     COMMENT "Building washington generator and preparing experiments..."
 )
+
+# Creates a "make run_tests" command
+add_custom_target(run_tests
+    DEPENDS FlowTests
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+    COMMENT "Building and running tests..."
+)

@@ -1,7 +1,7 @@
 # Fdb version 4
-["pdflatex"] 1777914700.4476 "/home/juliana/GitHub/Algoritmos-Avancados/Relatorios/Fluxos/r.tex" "r.pdf" "r" 1777914703.2244 2
+["pdflatex"] 1778086366.44183 "/home/juliana/GitHub/Algoritmos-Avancados/Relatorios/Fluxos/r.tex" "r.pdf" "r" 1778086367.5162 2
   "/etc/texmf/web2c/texmf.cnf" 1774183413.20018 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/juliana/GitHub/Algoritmos-Avancados/Relatorios/Fluxos/r.tex" 1777914697.09829 38626 5aa72b7b10e2de4182237ba2673ae1d3 ""
+  "/home/juliana/GitHub/Algoritmos-Avancados/Relatorios/Fluxos/r.tex" 1778086365.15635 38709 34ad357561581c8e2b56428d6663ccd3 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/newtx/ntx-ec-tlf.enc" 1698694482 2914 fdbc4a54b9bc76f4551b5303f2737d33 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/newtx/ntx-ot1-tlf.enc" 1422827479 2083 60e36f8eac802fcaf19eabe2633b406e ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -177,9 +177,9 @@
   "Images/time_scaling_BasicLine.png" 1777488989.13559 61245 ce6b5c8c2e645d9af0c7da10e276da6c ""
   "Images/time_scaling_DoubleExpLine.png" 1777488989.17751 64752 f610277b8525cdb05dc4352deaa24855 ""
   "infufrgs.cls" 1777488744.86326 41503 89d841af6419cfc01d430e6aa98b9aec ""
-  "r.aux" 1777914703.0654 11661 9b86d5088e84ff26a59be06a560b55b6 "pdflatex"
-  "r.out" 1777914703.0674 10256 a6983c1ae4a447d33c173502c3635f81 "pdflatex"
-  "r.tex" 1777914697.09829 38626 5aa72b7b10e2de4182237ba2673ae1d3 ""
+  "r.aux" 1778086367.46018 11103 76eb377c028a64e5d8fba22aece19b3c "pdflatex"
+  "r.out" 1778086367.46018 7641 1e6837b7f5808a9c488daeae65b19421 "pdflatex"
+  "r.tex" 1778086365.15635 38709 34ad357561581c8e2b56428d6663ccd3 ""
   (generated)
   "r.aux"
   "r.log"
