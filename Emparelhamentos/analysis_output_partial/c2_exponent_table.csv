@@ -1,0 +1,7 @@
+alpha,Algorithm,k_theory,k_emp,delta_k,R2,note,flag
+1.0,HungarianMatcher+BellmanFordStrategy,3.0,3.03,0.03,0.9999,,OK
+1.0,HungarianMatcher+JohnsonDijkstraStrategy,2.0,2.7,0.7,0.9983,log n excluded from fit,REVIEW
+1.5,HungarianMatcher+BellmanFordStrategy,3.5,2.89,-0.61,0.9998,,REVIEW
+1.5,HungarianMatcher+JohnsonDijkstraStrategy,2.5,2.63,0.13,0.9996,log n excluded from fit,OK
+2.0,HungarianMatcher+BellmanFordStrategy,4.0,2.97,-1.03,1.0,,REVIEW
+2.0,HungarianMatcher+JohnsonDijkstraStrategy,3.0,3.14,0.14,1.0,log n excluded from fit,OK

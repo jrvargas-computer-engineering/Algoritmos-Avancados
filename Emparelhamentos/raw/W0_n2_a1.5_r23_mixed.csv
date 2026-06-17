@@ -1,0 +1,17 @@
+test_id,n,alpha,rep,algorithm,iteration,weight_regime,metric_name,metric_value
+W0,2,1.5,23,Oracle,-1,mixed,oracle_size,2
+W0,2,1.5,23,Oracle,-1,mixed,oracle_value,-3
+W0,2,1.5,23,HungarianMatcher+BellmanFordStrategy,0,mixed,defect_at_iteration,1
+W0,2,1.5,23,HungarianMatcher+BellmanFordStrategy,1,mixed,defect_at_iteration,0
+W0,2,1.5,23,HungarianMatcher+BellmanFordStrategy,-1,mixed,augmentation_count,2
+W0,2,1.5,23,HungarianMatcher+BellmanFordStrategy,-1,mixed,matching_value,-3
+W0,2,1.5,23,HungarianMatcher+BellmanFordStrategy,-1,mixed,matching_size,2
+W0,2,1.5,23,HungarianMatcher+BellmanFordStrategy,-1,mixed,wall_clock_ms,0.005615
+W0,2,1.5,23,HungarianMatcher+JohnsonDijkstraStrategy,0,mixed,edge_relaxations,2
+W0,2,1.5,23,HungarianMatcher+JohnsonDijkstraStrategy,0,mixed,defect_at_iteration,1
+W0,2,1.5,23,HungarianMatcher+JohnsonDijkstraStrategy,1,mixed,edge_relaxations,1
+W0,2,1.5,23,HungarianMatcher+JohnsonDijkstraStrategy,1,mixed,defect_at_iteration,0
+W0,2,1.5,23,HungarianMatcher+JohnsonDijkstraStrategy,-1,mixed,augmentation_count,2
+W0,2,1.5,23,HungarianMatcher+JohnsonDijkstraStrategy,-1,mixed,matching_value,-3
+W0,2,1.5,23,HungarianMatcher+JohnsonDijkstraStrategy,-1,mixed,matching_size,2
+W0,2,1.5,23,HungarianMatcher+JohnsonDijkstraStrategy,-1,mixed,wall_clock_ms,0.005155

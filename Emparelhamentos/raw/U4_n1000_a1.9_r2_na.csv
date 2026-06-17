@@ -1,0 +1,14 @@
+test_id,n,alpha,rep,algorithm,iteration,weight_regime,metric_name,metric_value
+U4,1000,1.9,2,SimpleAugmentingMatcher,-1,na,wall_clock_ms,865.937
+U4,1000,1.9,2,SimpleAugmentingMatcher,-1,na,matching_size,1000
+U4,1000,1.9,2,HopcroftKarpMatcher,0,na,paths_found_per_phase,1000
+U4,1000,1.9,2,HopcroftKarpMatcher,0,na,bfs_edges_visited,501187
+U4,1000,1.9,2,HopcroftKarpMatcher,0,na,dfs_edges_visited,250888
+U4,1000,1.9,2,HopcroftKarpMatcher,0,na,defect_at_iteration,0
+U4,1000,1.9,2,HopcroftKarpMatcher,-1,na,phase_count,1
+U4,1000,1.9,2,HopcroftKarpMatcher,-1,na,main_loop_iters,1
+U4,1000,1.9,2,HopcroftKarpMatcher,-1,na,total_bfs_edges_visited,501187
+U4,1000,1.9,2,HopcroftKarpMatcher,-1,na,total_edges_visited,752075
+U4,1000,1.9,2,HopcroftKarpMatcher,-1,na,matching_size,1000
+U4,1000,1.9,2,HopcroftKarpMatcher,-1,na,wall_clock_ms,8.11551
+U4,1000,1.9,2,HopcroftKarpMatcher,-1,na,matching_size,1000

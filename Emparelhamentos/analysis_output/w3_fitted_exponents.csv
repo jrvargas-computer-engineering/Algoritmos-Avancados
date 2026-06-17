@@ -1,0 +1,11 @@
+alpha,Algorithm,k_theory,k_emp,R2
+1.0,HungarianMatcher+BellmanFordStrategy,3.0,3.03,0.9996
+1.0,HungarianMatcher+JohnsonDijkstraStrategy,2.0,2.69,0.9984
+1.25,HungarianMatcher+BellmanFordStrategy,3.25,3.17,0.9999
+1.25,HungarianMatcher+JohnsonDijkstraStrategy,2.25,2.67,0.9989
+1.5,HungarianMatcher+BellmanFordStrategy,3.5,2.91,0.9998
+1.5,HungarianMatcher+JohnsonDijkstraStrategy,2.5,2.64,0.9992
+1.75,HungarianMatcher+BellmanFordStrategy,3.75,3.05,0.9995
+1.75,HungarianMatcher+JohnsonDijkstraStrategy,2.75,2.88,0.9989
+2.0,HungarianMatcher+BellmanFordStrategy,4.0,2.96,0.9998
+2.0,HungarianMatcher+JohnsonDijkstraStrategy,3.0,3.14,0.9998
