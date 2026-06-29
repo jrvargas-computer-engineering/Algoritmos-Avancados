@@ -98,11 +98,11 @@ U0 & Correção & Oráculo não ponderado & 2--6 & 50 \\
 W0 & Correção & Oráculo ponderado & 2--4 & 100 \\
 U1 & Laço principal & Iterações vs.\ $n$ & 50--5000 & 10 \\
 U2 & Busca interna & Arestas BFS vs.\ defeito & 200--2000 & 5 \\
-U3 & Escalabilidade & Tempo de parede vs.\ $n$ & 100--10000 & 20 \\
+U3 & Escalabilidade & Tempo de parede vs.\ $n$ & 100--6400 & 20 \\
 U4 & Sensibilidade & Tempo vs.\ $\alpha$ ($n$ fixo) & 500--2000 & 15 \\
 W1 & Laço principal & Déficit BF vs.\ JD & 50--1000 & 10 \\
 W2 & Custo por chamada & Relaxações por chamada & 50--2000 & 10 \\
-W3 & Escalabilidade & Tempo ponderado vs.\ $n$ & 50--2000 & 20 \\
+W3 & Escalabilidade & Tempo ponderado vs.\ $n$ & 50--1600 & 20 \\
 W4 & Estresse & Regimes de peso negativos & 100--1000 & 20 \\
 C1 & Comparação & Tabela final não ponderada & 100--10000 & 30 \\
 C2 & Comparação & Tabela final ponderada & 50--2000 & 30 \\
@@ -110,7 +110,7 @@ C2 & Comparação & Tabela final ponderada & 50--2000 & 30 \\
 \end{tabular}
 \end{table}
 
-O expoente de densidade $\alpha$ toma os valores $\{1{,}0;\, 1{,}25;\, 1{,}5;\, 1{,}75;\, 2{,}0\}$ nos testes de escalabilidade ($U3$, $W3$, $C1$, $C2$) e $\{1{,}0;\, 1{,}5;\, 2{,}0\}$ nos demais. O orçamento de repetições é assimétrico: testes exploratórios usam 10 repetições, escalabilidade usa 20 e os testes de relatório final usam 30, refletindo a necessidade de intervalos de confiança mais estreitos para o ajuste de curvas.
+O expoente de densidade $\alpha$ toma os valores $\{1{,}0;\, 1{,}25;\, 1{,}5;\, 1{,}75;\, 2{,}0\}$ nos testes de escalabilidade em $n$ ($U3$ e $W3$) e $\{1{,}0;\, 1{,}5;\, 2{,}0\}$ nos demais (incluindo $C1$ e $C2$). O orçamento de repetições é assimétrico: testes exploratórios usam 10 repetições, escalabilidade usa 20 e os testes de relatório final usam 30, refletindo a necessidade de intervalos de confiança mais estreitos para o ajuste de curvas.
 
 \subsection{Estrutura dos Arquivos CSV}
 
@@ -379,7 +379,7 @@ $\alpha$ & Algoritmo & $k_\text{teórico}$ & $k_\text{emp}$ & $R^2$ \\
 \end{tabular}
 \end{table}
 
-O Simple executa exatamente $n$ aumentações em todas as densidades ($k_\text{emp} \approx 1{,}0$), confirmando a implementação do laço externo. O HK, porém, revela um resultado surpreendente: para $\alpha = 1{,}5$ e $\alpha = 2{,}0$, o número de fases é \textbf{constante} ($k_\text{emp} = 0$), tipicamente 1 a 2 fases para qualquer $n$ testado. Isso indica que, em grafos suficientemente densos, HK encontra o emparelhamento perfeito em uma única rodada BFS+DFS --- confirmando que os grafos gerados possuem estrutura favorável ao emparelhamento. Para $\alpha = 1{,}0$ (esparso), as fases crescem levemente com $k_\text{emp} = 0{,}16$, ainda bem abaixo do pior caso $O(\sqrt{n})$ (Figura~\ref{fig:u1}).
+O Simple executa exatamente $n$ aumentações em todas as densidades ($k_\text{emp} \approx 1{,}0$), confirmando a implementação do laço externo. O HK, porém, revela um resultado surpreendente: para $\alpha = 1{,}5$ e $\alpha = 2{,}0$, o número de fases é \textbf{constante} ($k_\text{emp} = 0$), tipicamente 1 a 2 fases para qualquer $n$ testado. Isso indica que, em grafos suficientemente densos, HK encontra o emparelhamento perfeito em uma única rodada BFS+DFS --- confirmando que os grafos gerados possuem estrutura favorável ao emparelhamento. Para $\alpha = 1{,}0$ (esparso), as fases crescem levemente com $k_\text{emp} = 0{,}16$, ainda bem abaixo do pior caso $O(\sqrt{n})$. O baixo $R^2 = 0{,}69$ do ajuste de HK em $\alpha = 1{,}5$ não indica desvio do comportamento constante: ao contrário, reflete a degenerescência de ajustar uma lei de potência a uma quantidade praticamente constante (1--2 fases), cujo declive quase nulo deixa o $R^2$ dominado pelo ruído inteiro da contagem de fases (Figura~\ref{fig:u1}).
 
 \begin{figure}[htbp]
     \centering
@@ -587,7 +587,7 @@ $\alpha$ & Algoritmo & $k_\text{teórico}$ & $k_\text{emp}$ & $R^2$ \\
 
 A Figura~\ref{fig:w2} e a Tabela~\ref{tab:w2-exponents} mostram que o número de relaxações de aresta por chamada do JD escala \emph{perfeitamente} com $n^\alpha$, confirmando a análise teórica de $O(m)$ relaxações por invocação do Dijkstra. O fator $\log n$ da fila de prioridade não aparece na contagem de relaxações pois cada aresta é relaxada no máximo uma vez; o custo do $\log n$ está nas extrações da heap.
 
-O contador \texttt{potential\_violations\_count} foi zero em \textbf{todas} as instâncias de W2, confirmando que a manutenção dos potenciais de Johnson garante $d'_{uv} \ge 0$ para toda aresta residual em todo momento.
+A invariância dos potenciais de Johnson ($d'_{uv} \ge 0$ para toda aresta residual) não é registrada por um contador dedicado, mas é corroborada indiretamente: o JD reproduz exatamente os valores ótimos de BF (W1, W4) e do oráculo de força bruta (W0). Tal concordância seria impossível se algum custo transformado se tornasse negativo, pois corromperia o cálculo de caminho mínimo do Dijkstra.
 
 \subsection{W3 -- Escalabilidade em Tempo de Parede: BF vs.\ JD}
 
@@ -615,7 +615,7 @@ O teste W3 avalia o tempo de parede de BF e JD em função de $n$ para cinco val
         \includegraphics[width=\linewidth]{w3_wall_clock_a2.0.png}
         \caption{$\alpha = 2{,}0$}
     \end{subfigure}
-    \caption{Tempo de parede (mediana) vs.\ $n$ em escala log-log por $\alpha$ (W3). Banda sombreada: mediana a p90; linhas tracejadas: referências teóricas. Para $\alpha \le 1{,}5$, JD é mais rápido; para $\alpha = 2{,}0$, BF é substancialmente mais rápido.}
+    \caption{Tempo de parede (mediana) vs.\ $n$ em escala log-log por $\alpha$ (W3). Banda sombreada: mediana a p90; linhas tracejadas: referências teóricas. Para $\alpha \le 1{,}5$, JD é mais rápido; em $\alpha = 1{,}75$ os tempos praticamente empatam; para $\alpha = 2{,}0$, BF é substancialmente mais rápido.}
     \label{fig:w3-wallclock}
 \end{figure}
 
@@ -634,29 +634,29 @@ O teste W3 avalia o tempo de parede de BF e JD em função de $n$ para cinco val
 \toprule
 $\alpha$ & Algoritmo & $k_\text{teórico}$ & $k_\text{emp}$ & $R^2$ \\
 \midrule
-1{,}0  & BellmanFordStrategy          & 3{,}00 & 3{,}02 & 1{,}000 \\
-1{,}0  & JohnsonDijkstraStrategy      & 2{,}00 & 2{,}76 & 0{,}999 \\
-1{,}25 & BellmanFordStrategy          & 3{,}25 & 3{,}09 & 1{,}000 \\
-1{,}25 & JohnsonDijkstraStrategy      & 2{,}25 & 2{,}75 & 1{,}000 \\
-1{,}5  & BellmanFordStrategy          & 3{,}50 & 2{,}87 & 1{,}000 \\
-1{,}5  & JohnsonDijkstraStrategy      & 2{,}50 & 2{,}65 & 1{,}000 \\
-1{,}75 & BellmanFordStrategy          & 3{,}75 & 2{,}91 & 1{,}000 \\
-1{,}75 & JohnsonDijkstraStrategy      & 2{,}75 & 2{,}85 & 1{,}000 \\
-2{,}0  & BellmanFordStrategy          & 4{,}00 & 2{,}97 & 1{,}000 \\
+1{,}0  & BellmanFordStrategy          & 3{,}00 & 3{,}03 & 1{,}000 \\
+1{,}0  & JohnsonDijkstraStrategy      & 2{,}00 & 2{,}69 & 0{,}998 \\
+1{,}25 & BellmanFordStrategy          & 3{,}25 & 3{,}17 & 1{,}000 \\
+1{,}25 & JohnsonDijkstraStrategy      & 2{,}25 & 2{,}67 & 0{,}999 \\
+1{,}5  & BellmanFordStrategy          & 3{,}50 & 2{,}91 & 1{,}000 \\
+1{,}5  & JohnsonDijkstraStrategy      & 2{,}50 & 2{,}64 & 0{,}999 \\
+1{,}75 & BellmanFordStrategy          & 3{,}75 & 3{,}05 & 1{,}000 \\
+1{,}75 & JohnsonDijkstraStrategy      & 2{,}75 & 2{,}88 & 0{,}999 \\
+2{,}0  & BellmanFordStrategy          & 4{,}00 & 2{,}96 & 1{,}000 \\
 2{,}0  & JohnsonDijkstraStrategy      & 3{,}00 & 3{,}14 & 1{,}000 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Os resultados de W3 (Figuras~\ref{fig:w3-wallclock} e~\ref{fig:w3-heatmap}, Tabela~\ref{tab:w3-exponents}) contêm o achado mais contraintuitivo dos experimentos: para $\alpha = 2{,}0$, JD é \textbf{10 vezes mais lento} que BF para $n = 2000$ (426\,900\,ms vs.\ 40\,942\,ms), apesar da previsão teórica de que JD deveria ser mais rápido. Dois efeitos concorrentes explicam o fenômeno:
+Os resultados de W3 (Figuras~\ref{fig:w3-wallclock} e~\ref{fig:w3-heatmap}, Tabela~\ref{tab:w3-exponents}) contêm o achado mais contraintuitivo dos experimentos: para $\alpha = 2{,}0$, JD é cerca de \textbf{10 vezes mais lento} que BF para $n = 1600$ (253\,864\,ms vs.\ 25\,966\,ms), apesar da previsão teórica de que JD deveria ser mais rápido. Dois efeitos concorrentes explicam o fenômeno:
 
 \begin{enumerate}
-    \item \textbf{BF com terminação antecipada:} o expoente empírico de BF é $k_\text{emp} \approx 2{,}9$--$3{,}0$ para todos os $\alpha$, \emph{muito abaixo} do teórico $2 + \alpha = 4{,}0$ para $\alpha = 2{,}0$. A flag \texttt{relaxed} elimina os passos de relaxação desnecessários, e o acesso sequencial à matriz de pesos tem excelente localidade de cache.
+    \item \textbf{BF com terminação antecipada:} o expoente empírico de BF é $k_\text{emp} \approx 2{,}9$--$3{,}2$ para todos os $\alpha$, \emph{muito abaixo} do teórico $2 + \alpha = 4{,}0$ para $\alpha = 2{,}0$. A flag \texttt{relaxed} elimina os passos de relaxação desnecessários, e o acesso sequencial à matriz de pesos tem excelente localidade de cache.
 
-    \item \textbf{Overhead do heap de JD:} para $\alpha = 2{,}0$, há $n^2$ arestas. Cada chamada do Dijkstra pode inserir $O(n^2)$ entradas na fila de prioridade. As operações de heap têm alto custo constante e péssima localidade de cache comparadas às relaxações simples de BF. O expoente empírico de JD ($k_\text{emp} = 3{,}14$) supera o de BF ($k_\text{emp} = 2{,}97$) para $\alpha = 2{,}0$.
+    \item \textbf{Overhead do heap de JD:} para $\alpha = 2{,}0$, há $n^2$ arestas. Cada chamada do Dijkstra pode inserir $O(n^2)$ entradas na fila de prioridade. As operações de heap têm alto custo constante e péssima localidade de cache comparadas às relaxações simples de BF. O expoente empírico de JD ($k_\text{emp} = 3{,}14$) supera o de BF ($k_\text{emp} = 2{,}96$) para $\alpha = 2{,}0$.
 \end{enumerate}
 
-Para $\alpha = 1{,}0$, JD é $\sim 6\times$ mais rápido que BF a $n = 2000$, e para $\alpha = 1{,}5$, JD é $\sim 3\times$ mais rápido. A vantagem de JD é máxima em grafos esparsos, onde a fila de prioridade é pequena e o custo de BF por passo é dominado pelo percurso de todos os $n$ vértices.
+Para $\alpha = 1{,}0$, JD é $\sim 6\times$ mais rápido que BF a $n = 1600$, e para $\alpha = 1{,}5$, $\sim 3\times$ mais rápido. A vantagem de JD, porém, \emph{não é monotônica} na esparsidade: ela atinge o máximo em $\alpha = 1{,}25$ ($\sim 10\times$ a $n = 1600$), decai à medida que o grafo adensa e o ponto de cruzamento ocorre em torno de $\alpha = 1{,}75$, onde BF e JD praticamente empatam; a partir daí BF domina. O custo de BF por passo é dominado pelo percurso de todos os $n$ vértices --- vantajoso apenas enquanto a fila de prioridade do Dijkstra permanece pequena o suficiente para que seu menor custo constante não seja superado pelo \emph{overhead} de heap.
 
 \subsection{W4 -- Estresse com Pesos Negativos}
 
@@ -678,9 +678,9 @@ Para $\alpha = 1{,}0$, JD é $\sim 6\times$ mais rápido que BF a $n = 2000$, e 
     \label{fig:w4}
 \end{figure}
 
-O teste W4 compara os três regimes de peso (Figura~\ref{fig:w4}): misto $[-n^2,\, n^2]$, totalmente negativo $[-n^2,\, 0]$ e totalmente positivo $[0,\, n^2]$. Em \textbf{todas as combinações} de $(n, \alpha, \text{regime})$, BF e JD produziram valores de emparelhamento \emph{idênticos} (diferença absoluta $< 10^{-6}$). O contador \texttt{potential\_violations\_count} permaneceu \textbf{zero em todos os regimes}, incluindo o totalmente negativo --- onde o potencial inicial $p_v = -W$ é mais tensionado.
+O teste W4 compara os três regimes de peso (Figura~\ref{fig:w4}), com $\alpha = 1{,}5$ fixo: misto $[-n^2,\, n^2]$, totalmente negativo $[-n^2,\, 0]$ e totalmente positivo $[0,\, n^2]$. Em \textbf{todas as combinações} de $(n, \text{regime})$, BF e JD produziram valores de emparelhamento \emph{idênticos} (diferença absoluta nula nas 20 repetições de cada célula). Essa coincidência exata --- somada à validação de JD contra o oráculo de força bruta em W0 --- é evidência indireta de que a manutenção dos potenciais de Johnson preservou a invariância $d'_{uv} \ge 0$ mesmo no regime totalmente negativo, o mais tensionado para o potencial inicial $p_v = -W$: uma única violação faria o Dijkstra calcular um caminho mínimo incorreto, fazendo JD divergir de BF.
 
-Um resultado curioso é que os valores de emparelhamento para o regime misto e o regime negativo foram \textbf{idênticos} para $n = 500$ e $n = 1000$. Isso indica que, para os grafos gerados, o emparelhamento perfeito de máxima cardinalidade no regime misto escolhe automaticamente arestas com pesos negativos --- a estrutura do grafo esparso não oferece alternativas de alto peso para todos os $n$ vértices da partição.
+Um resultado curioso é que os valores de emparelhamento para o regime misto e o regime negativo foram \textbf{idênticos} para \emph{todos} os $n$ testados (100, 500 e 1000), em cada uma das 20 repetições. Isso indica que, para os grafos gerados, o emparelhamento perfeito de máxima cardinalidade no regime misto escolhe automaticamente as mesmas arestas que o regime negativo --- como o emparelhamento é forçado a cobrir todos os $n$ vértices da partição, a estrutura esparsa do grafo não oferece alternativas de alto peso que permitam ao regime misto explorar suas arestas positivas.
 
 \subsection{C1 -- Comparação Final: Algoritmos Não Ponderados}
 
@@ -889,7 +889,7 @@ Os experimentos confirmaram as complexidades teóricas para a maioria dos casos,
 
 \textbf{Algoritmos ponderados:} JD é claramente superior para $\alpha = 1{,}0$ ($\sim 6\times$ mais rápido a $n = 2000$) e moderadamente melhor para $\alpha = 1{,}5$ ($\sim 3\times$). O resultado surpreendente é que para $\alpha = 2{,}0$, BF supera JD por um fator de $\sim 10\times$: a terminação antecipada reduz o expoente efetivo de BF para $\approx 3{,}0$ (muito abaixo do teórico 4{,}0), enquanto o alto custo constante do heap de JD em grafos densos resulta em expoente empírico de $3{,}14$ --- marginalmente acima do de BF. Esse cruzamento é um exemplo típico de como fatores de implementação (localidade de cache, overhead de estruturas de dados, terminação antecipada) podem reverter previsões assintóticas em faixas práticas de $n$.
 
-\textbf{Implicação prática:} Para emparelhamentos não ponderados, recomenda-se HK para qualquer grafo com $\alpha \ge 1{,}5$; para $\alpha = 1{,}0$, Simple é preferível até $n = 10000$. Para emparelhamentos ponderados com grafos esparsos a médios ($\alpha \le 1{,}5$), JD é a escolha correta. Para grafos densos ($\alpha \approx 2{,}0$), BF com terminação antecipada apresenta desempenho inesperadamente competitivo, e JD só deve ser preferido se o $n$ for suficientemente grande para amortizar o overhead da heap.
+\textbf{Implicação prática:} Para emparelhamentos não ponderados, recomenda-se HK para qualquer grafo com $\alpha \ge 1{,}5$; para $\alpha = 1{,}0$, Simple é preferível até $n = 10000$. Para emparelhamentos ponderados com grafos esparsos a médios ($\alpha \le 1{,}5$), JD é a escolha correta, com vantagem máxima em torno de $\alpha = 1{,}25$; o ponto de cruzamento situa-se próximo de $\alpha = 1{,}75$. Para grafos densos ($\alpha \approx 2{,}0$), BF com terminação antecipada não é apenas competitivo, mas \emph{superior a JD em toda a faixa testada}, com vantagem que \emph{cresce} com $n$ (de $\sim 6\times$ a $\sim 10\times$ entre $n=100$ e $n=2000$). Recomenda-se portanto BF para grafos densos: a suposta vantagem assintótica de JD só se materializaria, se tanto, para valores de $n$ muito além do intervalo prático aqui avaliado.
 
 %==================================================
 \appendix
